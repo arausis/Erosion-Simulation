@@ -129,8 +129,8 @@ if __name__ == "__main__":
 
     fig = plt.figure(figsize=(10, 7))
     ax1 = fig.add_subplot(1, 2, 1, projection='3d')  # left
-    raindrop = particle(10, 30, 1, perlin_map)
-    points, errosion_map = raindrop.simulate(100, 0.5, 0.3, 1)
+    raindrop = particle(10, 80, 1, perlin_map)
+    points, errosion_map = raindrop.simulate(100, 0.5, 0.5, 1)
     display_points( [points], ax1)
     display_terrain(perlin_map, ax1)
     plt.show()
@@ -140,7 +140,7 @@ if __name__ == "__main__":
     for i in tqdm(range(500)): 
         raindrop = particle(random.randint(0, 99), random.randint(0,99), 1, perlin_map)
          
-        points, errosion_map = raindrop.simulate(100, 3, 0.3, 1)
+        points, errosion_map = raindrop.simulate(100, 0.5, 0.3, 1)
         raindrops.append( points )
 
         errosion = errosion + errosion_map

@@ -77,7 +77,8 @@ class particle:
         a = max(9.8 * (sin_theta - cos_theta * friction), 0)
         a_flattened = cos_theta * a
 
-        self.velocity = self.velocity + (a * slope[:1] ) * stepsize
+        self.velocity = self.velocity + (a * slope[:2] ) * stepsize
+
 
         # Note our current position, then iterate it
         old_pos = self.pos
@@ -94,14 +95,12 @@ class particle:
 
         v_2 = (self.velocity @ self.velocity.T )
 
-        if False:
-            if (2 * 9.8 * delta_z) < v_2:
-                # We don't have enough energy to go where we're trying to go
-                self.velocity = [0, 0]
-            else:
-                # Possibly comment this out (trying to account for momentum gained on a downhill slope)
-                self.velocity = self.velocity / (v_2) **0.5 * (v_2 - 2 * 9.8 * delta_z) ** 0.5
-        self.pos = next_pos
+        if (2 * 9.8 * delta_z) > v_2 and False:
+            # We don't have enough energy to go where we're trying to go
+            self.velocity = [0, 0] # This has to be fixed. In a valley, it should be funneled not get stuck
+        else:
+            self.pos = next_pos
+
 
         return slope, self.velocity, old_pos
 
