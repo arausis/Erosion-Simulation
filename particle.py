@@ -77,15 +77,14 @@ class particle:
         a = max(9.8 * (sin_theta - cos_theta * friction), 0)
         a_flattened = cos_theta * a
 
-        self.velocity = self.velocity + (a * slope[:2] ) * stepsize
-
+        velocity_vector = (a * slope[:2] ) * stepsize
 
         # Note our current position, then iterate it
         old_pos = self.pos
-        next_pos = self.pos + self.velocity * stepsize
+        next_pos = self.pos + (self.velocity + velocity_vector) * stepsize
 
         if not self.in_bounds(next_pos):
-            return slope, self.velocity, old_pos
+            return
 
         # Now let's do a potential energy check (friction ignored)
         old_z = self.interp_z(old_pos[0], old_pos[1])
@@ -93,16 +92,45 @@ class particle:
 
         delta_z = next_z - old_z
 
-        v_2 = (self.velocity @ self.velocity.T )
+        v_2 = ( (self.velocity + velocity_vector) @ (self.velocity + velocity_vector).T )
 
-        if (2 * 9.8 * delta_z) > v_2 and False:
-            # We don't have enough energy to go where we're trying to go
-            self.velocity = [0, 0] # This has to be fixed. In a valley, it should be funneled not get stuck
+        if (2 * 9.8 * delta_z) > v_2:
+            # Hit an uphill and we don't have enough energy to go where we're trying to go.
+            """
+            Find the velocity (momentary acceleration) vector at our target location, average it out with our current one
+            """
+            # Find the direction of steepest slope at our target location
+            next_norm =  self.get_normal_vec(next_pos)
+
+            # Project downwards vector onto our plane
+            next_slope = down - (down @ norm) * norm
+
+            # Normalize it
+            next_slope_norm = (next_slope @ next_slope.T) ** 0.5
+            if next_slope_norm > 0:
+                next_slope = next_slope / next_slope_norm 
+
+            # sin and cos of the slope (incline slope problem)
+            sin_theta = -1 * next_slope[2]
+            cos_theta = ( next_slope[0] ** 2 + next_slope[1] ** 2 ) ** 0.5
+
+            # Just a Physics I incline slope problem (metric system)
+            a = max(9.8 * (sin_theta - cos_theta * friction), 0)
+            a_flattened = cos_theta * a
+
+            next_velocity_vector = (a * next_slope[:2] ) * stepsize * 2 # This 2 makes it a weighted sum (looks more natural)
+            avg_vector = (next_velocity_vector + velocity_vector) / 2
+
+            # Update our velocity and position with this averaged out vector
+            self.velocity = self.velocity + avg_vector
+            self.pos = self.pos + self.velocity * stepsize
+
         else:
+            # Everything's valid, just update our velocity and position
+            self.velocity = self.velocity + velocity_vector
             self.pos = next_pos
 
 
-        return slope, self.velocity, old_pos
 
     def in_bounds(self, point):
         return not (point[0] <= 1 or point[0] >= self.bounds[0] - 2 or point[1] <= 1 or point[1] >= self.bounds[1]-2)
