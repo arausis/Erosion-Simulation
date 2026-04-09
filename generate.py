@@ -120,8 +120,8 @@ def get_perlin(WIDTH = 100, DEPTH = 100, seed=random.randint(0,1000)):
 
 if __name__ == "__main__":
 
-    #perlin_map = get_perlin(100, 100)
-    perlin_map = np.array([np.linspace(0,(i -50)**2,100) for i in range(100)])
+    perlin_map = get_perlin(100, 100, 3)
+    #perlin_map = np.array([np.linspace((i -50)**2,(i -50)**2,100) for i in range(100)])
 
     raindrops = []
 
@@ -129,15 +129,11 @@ if __name__ == "__main__":
 
     fig = plt.figure(figsize=(10, 7))
     ax1 = fig.add_subplot(1, 2, 1, projection='3d')  # left
-    raindrop = particle(10, 80, 1, perlin_map)
-    points, errosion_map = raindrop.simulate(100, 0.5, 0.5, 1)
-    display_points( [points], ax1)
+    ax2 = fig.add_subplot(1, 2, 2, projection='3d')  # left
     display_terrain(perlin_map, ax1)
-    plt.show()
-    exit()
 
 
-    for i in tqdm(range(500)): 
+    for i in tqdm(range(200)): 
         raindrop = particle(random.randint(0, 99), random.randint(0,99), 1, perlin_map)
          
         points, errosion_map = raindrop.simulate(100, 0.5, 0.3, 1)
@@ -147,6 +143,7 @@ if __name__ == "__main__":
         perlin_map = perlin_map + errosion
     
 
-    display_terrain(perlin_map, ax1)
+    display_terrain(perlin_map, ax2)
+    display_points(raindrops, ax2)
     plt.show()
 
